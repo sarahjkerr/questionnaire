@@ -5,7 +5,7 @@ library(shiny)
 options <- c('Choose An Option!', 'Option1', 'Option2', 'Option3', 'Option4', 'Option5')
 
 #The app will only allow users to rank up to 3 options for now
-fields <- c('Field1', 'Field2', 'Field3', 'Rating1','Rating2','Rating3')
+fields <- c('Option1', 'Option2', 'Option3', 'Rating1','Rating2','Rating3')
 
 #Code for UI
 
