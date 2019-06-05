@@ -1,58 +1,75 @@
-
 library(shiny)
-library(ggplot2)
-library(googlesheets)
 
+#The options vector will house the continuously growing master list of options. This should be updated manually as new options
+#are added to the set (for now)
+options <- c('Choose An Option!', 'Option1', 'Option2', 'Option3', 'Option4', 'Option5')
 
+#The app will only allow users to rank up to 3 options for now
+fields <- c('Field1', 'Field2', 'Field3', 'Rating1','Rating2','Rating3')
 
-cheeses <- c("Choose a Cheese!", "Rogue Caveman Blue", "Bella Vitano Merlot", "Drunken Goat", "Spanish Idiazabal", "Raw Milk Manchego", "Aged Emmenthaler")
-fields <- c("cheese1","cheese2","chhes3","cheese4","cheese1_ranking","cheese2_ranking","cheese3_ranking","cheese4_ranking")
-responses <- file.path("~/Program Misc/Test/responses")
-humanTime <- function() format(Sys.time(), "%Y%m%d-%H%M%OS")
+#Code for UI
 
-gs_auth(new_user = TRUE)
-
-ui <- fluidPage( theme = "www/bootstrap1.css",
-    titlePanel("User Form"),
-    
-    mainPanel(
-      fluidRow(
-        column(3, selectInput("cheese1", h5("First Cheese"), choices = cheeses, selected = 1)),
-        column(3, selectInput("cheese2", h5("Second Cheese"), choices = cheeses, selected = 1)),
-        column(3, selectInput("cheese3", h5("Third Cheese"), choices = cheeses, selected = 1)),
-        column(3, selectInput("cheese4", h5("Fourth Cheese"), choices = cheeses, selected = 1))
+ui <- navbarPage('User Form',
+  
+  tabPanel('User Input',
+           mainPanel(
+             fluidRow(
+               column(4, selectInput('Option1', h5('First Option'), choices = options, selected = 1)),
+               column(4, selectInput('Option2', h5('Second Option'), choices = options, selected = 1)),
+               column(4, selectInput('Option3', h5('Third Option'), choices = options, selected = 1))
+             ),
+             fluidRow(
+               column(4, sliderInput('Rating1', h5('Rate the First Option!'), min = 1, max = 5, value = 3)),
+               column(4, sliderInput('Rating2', h5('Rate the Second Option!'), min = 1, max = 5, value = 3)),
+               column(4, sliderInput('Rating3', h5('Rate the Third Option!'), min = 1, max = 5, value = 3))
+             ),
+             dateInput('Date', label = h5('When did you encounter this option?'), value = '2019-01-01'),
+             
+             hr(),
+             fluidRow(
+               column(6, verbatimTextOutput('value'))
+             ),
+             actionButton('submit', label = 'Submit!')
+           )
       ),
-      fluidRow(
-        column(3, sliderInput("cheese1_rating", h5("Rate the Second Cheese!"), min = 1, max = 5, value = 3)),
-        column(3, sliderInput("cheese2_rating", h5("Rate the Second Cheese!"), min = 1, max = 5, value = 3)),
-        column(3, sliderInput("cheese3_rating", h5("Rate the Third Cheese!"), min = 1, max = 5, value = 3)),
-        column(3, sliderInput("cheese4_rating", h5("Rate the Fourth Cheese!"), min = 1, max = 5, value = 3))
-      ),
-      actionButton("submit", label = "All Gouda!"),
-      hr(),
-      fluidRow(column(2, verbatimTextOutput("value")))
-    )
+  tabPanel('Data',
+           dataTableOutput('responses')
   )
+)
 
+#Code for server
+#This half works, but needs a lot of updating to acutally render user input. 
 
-server <- function(input, output) {
+server <- function(input, output, session) {
+  saveData <- function(data) {
+    data <- as.data.frame(t(data))
+    if (exists('responses')) {
+      response <<- rbind(responses, data)
+    } else {
+      responses <<- data
+    }
+  }
+  
+  loadData <- function() {
+    if (exists('responses')) {
+      responses
+    }
+  }
   
   formData <- reactive({
     data <- sapply(fields, function(x) input[[x]])
     data
   })
   
-  saveData <- function(data) {
-    fileName <- sprintf("%s.csv",
-                        humanTime())
-    
-    write.csv(x = data, file = file.path(responses, fileName),
-              row.names = FALSE, quote = TRUE)
-  }
-  
   observeEvent(input$submit, {
     saveData(formData())
   })
+  
+  output$responses <- renderDataTable({
+    input$submit
+    loadData()
+  })
 }
 
+#Code to run app
 shinyApp(ui = ui, server = server)
