@@ -1,11 +1,11 @@
 library(shiny)
+library(ggplot2)
+library(googlesheets)
+library(dplyr)
 
 #The options vector will house the continuously growing master list of options. This should be updated manually as new options
 #are added to the set (for now)
 options <- c('Choose An Option!', 'Option1', 'Option2', 'Option3', 'Option4', 'Option5')
-
-#The app will only allow users to rank up to 3 options for now
-fields <- c('Option1', 'Option2', 'Option3', 'Rating1','Rating2','Rating3')
 
 #Code for UI
 
@@ -33,43 +33,33 @@ ui <- navbarPage('User Form',
            )
       ),
   tabPanel('Data',
-           dataTableOutput('responses')
+           tableOutput('xyz')
   )
 )
 
 #Code for server
-#This half works, but needs a lot of updating to acutally render user input. 
 
 server <- function(input, output, session) {
-  saveData <- function(data) {
-    data <- as.data.frame(t(data))
-    if (exists('responses')) {
-      response <<- rbind(responses, data)
-    } else {
-      responses <<- data
-    }
-  }
   
-  loadData <- function() {
-    if (exists('responses')) {
-      responses
-    }
-  }
-  
-  formData <- reactive({
-    data <- sapply(fields, function(x) input[[x]])
-    data
-  })
+  data_structure <- data.frame(Option1 = c('A','B'), Option2 = c('D','E'), Option3 = c('F','G'),
+                               Rating1 = c(1,5), Rating2 = c(2,3), Rating3 = c(4,3),
+                               Date = c('2019-05-04','2019-06-01'))
   
   observeEvent(input$submit, {
-    saveData(formData())
-  })
-  
-  output$responses <- renderDataTable({
-    input$submit
-    loadData()
+    
+    test_df <- data.frame('Option1' = input$Option1, 'Option2' = input$Option2, 'Option3' = input$Option3,
+                          'Rating1' = input$Rating1, 'Rating2' = input$Rating2, 'Rating3' = input$Rating3,
+                          'Date' = input$Date)
+    if(!is.null(input$Option1)){
+      abc <- rbind(data_structure, test_df)
+    } else {
+      abc <- test_df
+    }
+    
+    output$xyz <- renderTable({ head(abc)})
   })
 }
 
 #Code to run app
 shinyApp(ui = ui, server = server)
+
