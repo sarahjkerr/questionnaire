@@ -1,41 +1,52 @@
 library(shiny)
-library(ggplot2)
 library(googlesheets)
 library(dplyr)
+library(httr)
 
 #The options vector will house the continuously growing master list of options. This should be updated manually as new options
 #are added to the set (for now)
-options <- c('Choose An Option!', 'Option1', 'Option2', 'Option3', 'Option4', 'Option5')
+options <- c('Choose An Option!', 'A', 'B', 'C', 'D', 'E')
+
+#Storage setup
+sheet_key <- 
+  extract_key_from_url('https://docs.google.com/spreadsheets/d/1hrVLwoqleFXwr0jcHwIsCOYJg2LYUQtrsLDECLJ4hHs/edit?usp=sharing')
+
+sheet_registration <- sheet_key %>%
+  gs_key()
+
+sheet_data <- sheet_registration %>%
+  gs_read(ws = 'Sheet1')
 
 #Code for UI
 
-ui <- navbarPage('User Form',
+ui <- fluidPage(
+  titlePanel('User Input'),
   
-  tabPanel('User Input',
-           mainPanel(
-             fluidRow(
-               column(4, selectInput('Option1', h5('First Option'), choices = options, selected = 1)),
-               column(4, selectInput('Option2', h5('Second Option'), choices = options, selected = 1)),
-               column(4, selectInput('Option3', h5('Third Option'), choices = options, selected = 1))
-             ),
-             fluidRow(
-               column(4, sliderInput('Rating1', h5('Rate the First Option!'), min = 1, max = 5, value = 3)),
-               column(4, sliderInput('Rating2', h5('Rate the Second Option!'), min = 1, max = 5, value = 3)),
-               column(4, sliderInput('Rating3', h5('Rate the Third Option!'), min = 1, max = 5, value = 3))
-             ),
-             dateInput('Date', label = h5('When did you encounter this option?'), value = '2019-01-01'),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput('Option1', h5('First Option'), choices = options, selected = 1),
+      sliderInput('Rating1', h5('Rate the First Option!'), min = 1, max = 5, value = 3),
+      selectInput('Option2', h5('Second Option'), choices = options, selected = 1),
+      sliderInput('Rating2', h5('Rate the Second Option!'), min = 1, max = 5, value = 3),
+      selectInput('Option3', h5('Third Option'), choices = options, selected = 1),
+      sliderInput('Rating3', h5('Rate the Third Option!'), min = 1, max = 5, value = 3),
+      dateInput('Date', label = h5('When did you encounter this option?'), value = '2019-01-01'),
              
              hr(),
              fluidRow(
                column(6, verbatimTextOutput('value'))
              ),
              actionButton('submit', label = 'Submit!')
-           )
       ),
-  tabPanel('Data',
-           tableOutput('xyz')
+
+    mainPanel(
+      tableOutput('xyz')
+      #plotOutput('bar', 'height' = 500)
+    )
   )
 )
+
+
 
 #Code for server
 
@@ -57,6 +68,10 @@ server <- function(input, output, session) {
     }
     
     output$xyz <- renderTable({ head(abc)})
+    
+    #output$bar <- renderPlot({
+      #barplot(colSums(abc[,c('Options')]))
+    #})
   })
 }
 
