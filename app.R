@@ -1,7 +1,7 @@
 library(shiny)
 library(googlesheets)
 library(dplyr)
-library(httr)
+library(data.table)
 
 #The options vector will house the continuously growing master list of options. This should be updated manually as new options
 #are added to the set (for now)
@@ -37,8 +37,8 @@ ui <- fluidPage(
       ),
 
     mainPanel(
-      tableOutput('xyz')
-      #plotOutput('bar', 'height' = 500)
+      tableOutput('xyz'),
+      plotOutput('bar', 'height' = 500)
     )
   )
 )
@@ -63,14 +63,23 @@ server <- function(input, output, session) {
     
     output$xyz <- renderTable({(abc)})
     
-    #output$bar <- renderPlot({
-      #barplot(colSums(abc[,c('Options')]))
-    #})
-    
     gs_add_row(sheet_registration, ws = 'Sheet1', input = test_df, verbose = TRUE)
+    
+    data_to_plot <- melt(setDT(abc), measure=patterns(c('^Option', '^Rating')),
+                    value.name = c('Option','Rating'))[, variable:=NULL][] %>%
+      group_by(option) %>%
+      summarise(agg_rating = sum(rating))
+    
+    output$bar <- renderPlot({
+    barplot(colSums(data_to_plot[,c('Option','Rating')]),
+            ylab = 'Total Rating',
+            xlab = 'Option Name',
+            names.arg = c('Option','Rating'),
+            col = color)
+    })
+    
   })
 }
 
 #Code to run app
 shinyApp(ui = ui, server = server)
-
