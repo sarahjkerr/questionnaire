@@ -72,6 +72,8 @@ server <- function(input, output, session) {
     #output$bar <- renderPlot({
       #barplot(colSums(abc[,c('Options')]))
     #})
+    
+    gs_add_row(sheet_registration, ws = 'Sheet1', input = test_df, verbose = TRUE)
   })
 }
 
