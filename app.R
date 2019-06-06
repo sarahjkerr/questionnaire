@@ -14,8 +14,6 @@ sheet_key <-
 sheet_registration <- sheet_key %>%
   gs_key()
 
-sheet_data <- sheet_registration %>%
-  gs_read(ws = 'Sheet1')
 
 #Code for UI
 
@@ -52,9 +50,11 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
-  data_structure <- data.frame(Option1 = c('A','B'), Option2 = c('D','E'), Option3 = c('F','G'),
-                               Rating1 = c(1,5), Rating2 = c(2,3), Rating3 = c(4,3),
-                               Date = c('2019-05-04','2019-06-01'))
+  #data_structure <- data.frame(Option1 = c('A','B'), Option2 = c('D','E'), Option3 = c('F','G'),
+                               #Rating1 = c(1,5), Rating2 = c(2,3), Rating3 = c(4,3),
+                               #Date = c('2019-05-04','2019-06-01'))
+  sheet_data <- sheet_registration %>%
+    gs_read(ws = 'Sheet1')
   
   observeEvent(input$submit, {
     
@@ -62,7 +62,7 @@ server <- function(input, output, session) {
                           'Rating1' = input$Rating1, 'Rating2' = input$Rating2, 'Rating3' = input$Rating3,
                           'Date' = input$Date)
     if(!is.null(input$Option1)){
-      abc <- rbind(data_structure, test_df)
+      abc <- rbind(sheet_data, test_df)
     } else {
       abc <- test_df
     }
