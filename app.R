@@ -49,7 +49,7 @@ ui <- fluidPage(
     mainPanel(
       tabsetPanel(type = 'tabs',
                   tabPanel('Plot of Cheese Ratings', plotOutput('bar', 'height' = 500)),
-                  tabPanel('See Raw Cheese Data',tableOutput('xyz'))
+                  tabPanel('See Raw Cheese Data',tableOutput('raw_data'))
       )
     )
   )
@@ -73,14 +73,15 @@ server <- function(input, output, session) {
       final_df <- sheet_data
     }
     
-    output$xyz <- renderTable({(final_df)})
-    
     gs_add_row(sheet_registration, ws = 'Sheet1', input = framework_df, verbose = TRUE)
     
     data_to_plot <- melt(setDT(final_df), measure=patterns(c('^Option', '^Rating')),
                     value.name = c('Option','Rating'))[, variable:=NULL][] %>%
       group_by(Option) %>%
-      summarise(avg_rating = mean(Rating, na.rm = TRUE))
+      summarise(avg_rating = mean(Rating, na.rm = TRUE)) %>%
+      filter(Option != 'Choose an Option!')
+    
+    output$raw_data <- renderTable({(data_to_plot)})
     
     output$bar <- renderPlot({
       ggplot(data_to_plot, aes(x = Option, y = avg_rating)) + 
@@ -92,7 +93,7 @@ server <- function(input, output, session) {
         ylab('Average Rating') +
         theme_gdocs() +
         scale_color_gdocs()
-        
+      
     })
     
   })
