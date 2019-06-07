@@ -2,6 +2,9 @@ library(shiny)
 library(googlesheets)
 library(dplyr)
 library(data.table)
+library(ggplot2)
+library(shinyjs)
+library(stringi)
 
 #The options vector will house the continuously growing master list of options. This should be updated manually as new options
 #are added to the set (for now)
@@ -15,7 +18,11 @@ sheet_registration <- sheet_key %>%
   gs_key()
 
 #Code for UI
+
 ui <- fluidPage(
+  
+  useShinyjs(),
+  
   titlePanel('User Input'),
   
   sidebarLayout(
@@ -32,16 +39,22 @@ ui <- fluidPage(
              fluidRow(
                column(6, verbatimTextOutput('value'))
              ),
-      textInput('Name', h5("What's you name?"), value = ''),
-             actionButton('submit', label = 'Submit!')
+             actionButton('submit', label = 'Submit!'),
+      hidden(
+        textInput('ID', label = h5('Submission ID'), value = (stri_rand_strings(1,10)))
+      )
       ),
 
     mainPanel(
-      tableOutput('xyz'),
-      plotOutput('bar', 'height' = 500)
+      tabsetPanel(type = 'tabs',
+                  #tabPanel('Plot of Data', plotOutput('bar', 'height' = 500)),
+                  tabPanel('Table of Data',tableOutput('xyz'))
+      )
     )
   )
 )
+
+
 
 
 
@@ -52,9 +65,11 @@ server <- function(input, output, session) {
 
   observeEvent(input$submit, {
     
+    
+    
     test_df <- data.frame('Option1' = input$Option1, 'Option2' = input$Option2, 'Option3' = input$Option3,
                           'Rating1' = input$Rating1, 'Rating2' = input$Rating2, 'Rating3' = input$Rating3,
-                          'Date' = input$Date, 'Name' = input$Name)
+                          'Date' = input$Date, 'ID' = input$ID)
     if(!is.null(input$Option1)){
       abc <- rbind(sheet_data, test_df)
     } else {
@@ -65,18 +80,14 @@ server <- function(input, output, session) {
     
     gs_add_row(sheet_registration, ws = 'Sheet1', input = test_df, verbose = TRUE)
     
-    data_to_plot <- melt(setDT(abc), measure=patterns(c('^Option', '^Rating')),
-                    value.name = c('Option','Rating'))[, variable:=NULL][] %>%
-      group_by(option) %>%
-      summarise(agg_rating = sum(rating))
+    #data_to_plot <- melt(setDT(abc), measure=patterns(c('^Option', '^Rating')),
+                 #   value.name = c('Option','Rating'))[, variable:=NULL][] %>%
+   #   group_by(option) %>%
+      #summarise(agg_rating = sum(rating))
     
-    output$bar <- renderPlot({
-    barplot(colSums(data_to_plot[,c('Option','Rating')]),
-            ylab = 'Total Rating',
-            xlab = 'Option Name',
-            names.arg = c('Option','Rating'),
-            col = color)
-    })
+    #output$bar <- renderPlot({
+      #ggplot(data_to_plot, aes(x = Option, y = Rating)) + geom_bar(stat = 'identity')
+    #})
     
   })
 }
