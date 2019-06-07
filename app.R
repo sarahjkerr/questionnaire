@@ -19,7 +19,6 @@ sheet_registration <- sheet_key %>%
   gs_key()
 
 #Code for UI
-
 ui <- fluidPage(
   
   useShinyjs(),
@@ -28,19 +27,19 @@ ui <- fluidPage(
   
   sidebarLayout(
     sidebarPanel(
+      dateInput('Date', label = h5('When did you encounter this option?'), value = '2019-01-01'),
+      
+      hr(),
+      fluidRow(
+        column(6, verbatimTextOutput('value'))
+      ),
       selectInput('Option1', h5('First Option'), choices = options, selected = 1),
       sliderInput('Rating1', h5('Rate the First Option!'), min = 1, max = 5, value = 3),
       selectInput('Option2', h5('Second Option'), choices = options, selected = 1),
       sliderInput('Rating2', h5('Rate the Second Option!'), min = 1, max = 5, value = 3),
       selectInput('Option3', h5('Third Option'), choices = options, selected = 1),
       sliderInput('Rating3', h5('Rate the Third Option!'), min = 1, max = 5, value = 3),
-      dateInput('Date', label = h5('When did you encounter this option?'), value = '2019-01-01'),
-             
-             hr(),
-             fluidRow(
-               column(6, verbatimTextOutput('value'))
-             ),
-             actionButton('submit', label = 'Submit!'),
+      actionButton('submit', label = 'Submit!'),
       hidden(
         textInput('ID', label = h5('Submission ID'), value = (stri_rand_strings(1,10)))
       )
@@ -55,10 +54,6 @@ ui <- fluidPage(
   )
 )
 
-
-
-
-
 #Code for server
 server <- function(input, output, session) {
   sheet_data <- sheet_registration %>%
@@ -68,20 +63,20 @@ server <- function(input, output, session) {
     
     
     
-    test_df <- data.frame('Option1' = input$Option1, 'Option2' = input$Option2, 'Option3' = input$Option3,
+    framework_df <- data.frame('Option1' = input$Option1, 'Option2' = input$Option2, 'Option3' = input$Option3,
                           'Rating1' = input$Rating1, 'Rating2' = input$Rating2, 'Rating3' = input$Rating3,
                           'Date' = input$Date, 'ID' = input$ID)
     if(!is.null(input$Option1)){
-      abc <- rbind(sheet_data, test_df)
+      final_df <- rbind(sheet_data, framework_df)
     } else {
-      abc <- sheet_data
+      final_df <- sheet_data
     }
     
-    output$xyz <- renderTable({(abc)})
+    output$xyz <- renderTable({(final_df)})
     
-    gs_add_row(sheet_registration, ws = 'Sheet1', input = test_df, verbose = TRUE)
+    gs_add_row(sheet_registration, ws = 'Sheet1', input = framework_df, verbose = TRUE)
     
-    data_to_plot <- melt(setDT(abc), measure=patterns(c('^Option', '^Rating')),
+    data_to_plot <- melt(setDT(final_df), measure=patterns(c('^Option', '^Rating')),
                     value.name = c('Option','Rating'))[, variable:=NULL][] %>%
       group_by(Option) %>%
       summarise(avg_rating = mean(Rating, na.rm = TRUE))
@@ -92,6 +87,8 @@ server <- function(input, output, session) {
                  stat = 'identity',
                  color = 'black') +
         ggtitle('Mean Rating per Option') +
+        xlab('Options') +
+        ylab('Average Rating') +
         theme_gdocs() +
         scale_color_gdocs()
         
