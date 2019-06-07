@@ -5,9 +5,10 @@ library(data.table)
 library(ggplot2)
 library(shinyjs)
 library(stringi)
+library(ggthemes)
 
 #The options vector will house the continuously growing master list of options. This should be updated manually as new options
-#are added to the set (for now)
+#are added to the set (for now-> use API and auto-populate down the road?)
 options <- c('Choose An Option!', 'A', 'B', 'C', 'D', 'E')
 
 #Storage setup
@@ -47,8 +48,8 @@ ui <- fluidPage(
 
     mainPanel(
       tabsetPanel(type = 'tabs',
-                  #tabPanel('Plot of Data', plotOutput('bar', 'height' = 500)),
-                  tabPanel('Table of Data',tableOutput('xyz'))
+                  tabPanel('Plot of Data', plotOutput('bar', 'height' = 500)),
+                  tabPanel('See Raw Data',tableOutput('xyz'))
       )
     )
   )
@@ -80,14 +81,21 @@ server <- function(input, output, session) {
     
     gs_add_row(sheet_registration, ws = 'Sheet1', input = test_df, verbose = TRUE)
     
-    #data_to_plot <- melt(setDT(abc), measure=patterns(c('^Option', '^Rating')),
-                 #   value.name = c('Option','Rating'))[, variable:=NULL][] %>%
-   #   group_by(option) %>%
-      #summarise(agg_rating = sum(rating))
+    data_to_plot <- melt(setDT(abc), measure=patterns(c('^Option', '^Rating')),
+                    value.name = c('Option','Rating'))[, variable:=NULL][] %>%
+      group_by(Option) %>%
+      summarise(avg_rating = mean(Rating, na.rm = TRUE))
     
-    #output$bar <- renderPlot({
-      #ggplot(data_to_plot, aes(x = Option, y = Rating)) + geom_bar(stat = 'identity')
-    #})
+    output$bar <- renderPlot({
+      ggplot(data_to_plot, aes(x = Option, y = avg_rating)) + 
+        geom_bar(aes(fill=Option),
+                 stat = 'identity',
+                 color = 'black') +
+        ggtitle('Mean Rating per Option') +
+        theme_gdocs() +
+        scale_color_gdocs()
+        
+    })
     
   })
 }
