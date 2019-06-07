@@ -1,9 +1,8 @@
 # Questionnaire
 
-A basic R Shiny app that visualizes how my colleagues feel about our options during Cheese Thursdays.
+A basic R Shiny app that visualizes how my work colleagues feel about our options during Cheese Thursdays.
 
 https://skerrdevwork.shinyapps.io/cheese_rating_app/
-
 
 ### Future Features:
 
