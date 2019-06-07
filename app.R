@@ -9,7 +9,8 @@ library(ggthemes)
 
 #The options vector will house the continuously growing master list of options. This should be updated manually as new options
 #are added to the set (for now-> use API and auto-populate down the road?)
-options <- c('Choose An Option!', 'A', 'B', 'C', 'D', 'E')
+options <- c('Choose An Option!', 'Bella Vitano Merlot', 'Drunken Goat', 'Rogue Caveman Blue', 'Truffle Tartufo', 
+             'Spanish Idiazabal', 'Truffle Tremor', 'Raw Milk Manchego')
 
 #Storage setup
 sheet_key <- 
@@ -23,22 +24,22 @@ ui <- fluidPage(
   
   useShinyjs(),
   
-  titlePanel('User Input'),
+  titlePanel('Cheese Rater'),
   
   sidebarLayout(
     sidebarPanel(
-      dateInput('Date', label = h5('When did you encounter this option?'), value = '2019-01-01'),
+      dateInput('Date', label = h5('When did you eat these cheeses?'), value = '2019-04-01'),
       
       hr(),
       fluidRow(
         column(6, verbatimTextOutput('value'))
       ),
-      selectInput('Option1', h5('First Option'), choices = options, selected = 1),
-      sliderInput('Rating1', h5('Rate the First Option!'), min = 1, max = 5, value = 3),
-      selectInput('Option2', h5('Second Option'), choices = options, selected = 1),
-      sliderInput('Rating2', h5('Rate the Second Option!'), min = 1, max = 5, value = 3),
-      selectInput('Option3', h5('Third Option'), choices = options, selected = 1),
-      sliderInput('Rating3', h5('Rate the Third Option!'), min = 1, max = 5, value = 3),
+      selectInput('Option1', h5('First Cheese'), choices = options, selected = 1),
+      sliderInput('Rating1', h5('Rate the First Cheese!'), min = 1, max = 5, value = 3),
+      selectInput('Option2', h5('Second Cheese'), choices = options, selected = 1),
+      sliderInput('Rating2', h5('Rate the Second Cheese!'), min = 1, max = 5, value = 3),
+      selectInput('Option3', h5('Third Cheese'), choices = options, selected = 1),
+      sliderInput('Rating3', h5('Rate the Third Cheese!'), min = 1, max = 5, value = 3),
       actionButton('submit', label = 'Submit!'),
       hidden(
         textInput('ID', label = h5('Submission ID'), value = (stri_rand_strings(1,10)))
@@ -47,8 +48,8 @@ ui <- fluidPage(
 
     mainPanel(
       tabsetPanel(type = 'tabs',
-                  tabPanel('Plot of Data', plotOutput('bar', 'height' = 500)),
-                  tabPanel('See Raw Data',tableOutput('xyz'))
+                  tabPanel('Plot of Cheese Ratings', plotOutput('bar', 'height' = 500)),
+                  tabPanel('See Raw Cheese Data',tableOutput('xyz'))
       )
     )
   )
