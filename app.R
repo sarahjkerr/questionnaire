@@ -10,7 +10,7 @@ library(ggthemes)
 #The options vector will house the continuously growing master list of options. This should be updated manually as new options
 #are added to the set (for now-> use API and auto-populate down the road?)
 options <- c('Choose An Option!', 'Bella Vitano Merlot', 'Drunken Goat', 'Rogue Caveman Blue', 'Truffle Tartufo', 
-             'Spanish Idiazabal', 'Truffle Tremor', 'Raw Milk Manchego')
+             'Spanish Idiazabal', 'Truffle Tremor', 'Raw Milk Manchego','Young French Comte','Manchego with Rosemary')
 
 #Storage setup
 sheet_key <- 
@@ -24,7 +24,7 @@ ui <- fluidPage(
   
   useShinyjs(),
   
-  titlePanel('Cheese Rater'),
+  titlePanel('Cheese Grader'),
   
   sidebarLayout(
     sidebarPanel(
@@ -92,6 +92,7 @@ server <- function(input, output, session) {
         xlab('Options') +
         ylab('Average Rating') +
         theme_gdocs() +
+        theme(axis.text.x = element_text(angle = 90, hjust =1)) +
         scale_color_gdocs()
       
     })
