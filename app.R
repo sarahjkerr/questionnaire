@@ -10,7 +10,8 @@ library(ggthemes)
 #The options vector will house the continuously growing master list of options. This should be updated manually as new options
 #are added to the set (for now-> use API and auto-populate down the road?)
 options <- c('Choose An Option!', 'Bella Vitano Merlot', 'Drunken Goat', 'Rogue Caveman Blue', 'Truffle Tartufo', 
-             'Spanish Idiazabal', 'Truffle Tremor', 'Raw Milk Manchego','Young French Comte','Manchego with Rosemary')
+             'Spanish Idiazabal', 'Truffle Tremor', 'Raw Milk Manchego','Young French Comte','Manchego with Rosemary',
+             'Aged Gouda with Truffle','Aged Manchego')
 
 #Storage setup
 sheet_key <- 
@@ -40,7 +41,7 @@ ui <- fluidPage(
       sliderInput('Rating2', h5('Rate the Second Cheese!'), min = 1, max = 5, value = 3),
       selectInput('Option3', h5('Third Cheese'), choices = options, selected = 1),
       sliderInput('Rating3', h5('Rate the Third Cheese!'), min = 1, max = 5, value = 3),
-      actionButton('submit', label = 'Submit!'),
+      actionButton('submit', label = 'All Gouda!'),
       hidden(
         textInput('ID', label = h5('Submission ID'), value = (stri_rand_strings(1,10)))
       )
@@ -79,7 +80,7 @@ server <- function(input, output, session) {
                     value.name = c('Option','Rating'))[, variable:=NULL][] %>%
       group_by(Option) %>%
       summarise(avg_rating = mean(Rating, na.rm = TRUE)) %>%
-      filter(Option != 'Choose an Option!')
+      filter(Option != 'Choose An Option!')
     
     output$raw_data <- renderTable({(data_to_plot)})
     
@@ -88,7 +89,7 @@ server <- function(input, output, session) {
         geom_bar(aes(fill=Option),
                  stat = 'identity',
                  color = 'black') +
-        ggtitle('Mean Rating per Option') +
+        ggtitle('Mean Cheese Rating') +
         xlab('Options') +
         ylab('Average Rating') +
         theme_gdocs() +
